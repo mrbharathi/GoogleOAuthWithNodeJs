@@ -52,34 +52,57 @@ function getGoogleURL() {
 
 var googleURL = getGoogleURL();
 
+function GetUserDetailsFromGoogle(code, callback) {
+  var oAuth2Client = createConnection();
+
+  // Get an access token based on our OAuth code
+  oAuth2Client.getToken(code, (err, tokens) => {
+    if (err) {
+      console.log('Error authenticating');
+      console.log(err);
+      callback(err, null);
+    }
+    else {
+      console.log('Successfully authenticated');
+
+      oAuth2Client.setCredentials(tokens);
+      var people = (new google.people_v1.People({ auth: oAuth2Client }).people);
+      var mePromise = people.get({ resourceName: 'people/me', personFields: 'names,emailAddresses' });
+      mePromise.then(me => {
+
+        var userData = {
+          displayName: me.data.names[0].displayName,
+          emailAddress: me.data.emailAddresses[0].value
+        }
+
+        callback(null, userData);
+        //res.send("Welcome " + me.data.names[0].displayName + "</br>You signed in with " + me.data.emailAddresses[0].value);
+      }
+      );
+    }
+  });
+}
+
 //Home page of our site
 app.get('/', (req, res) => {
   res.send(`<a href=${googleURL}>Login with google</a>`);
 })
 
+//Call back route from google once signing successful
 app.get('/gauth', function (req, res) {
 
-  var code = req.query.code;
+  var code = req.query.code; //code is sent from google signin 
 
-  if (code) {
-  var oAuth2Client = createConnection();
-
-    // Get an access token based on our OAuth code
-    oAuth2Client.getToken(code, (err, tokens) => {
+  if (code) { //validate code with google, user may directly access this page with or without valid code directly
+    GetUserDetailsFromGoogle(code, (err, userData) => {
       if (err) {
-        console.log('Error authenticating')
-        console.log(err);
-        res.redirect('/');
-      } else {
-        console.log('Successfully authenticated');
-
-        oAuth2Client.setCredentials(tokens);
-        var people = (new google.people_v1.People({ auth: oAuth2Client }).people);
-        var mePromise = people.get({ resourceName: 'people/me', personFields: 'names,emailAddresses' });
-        mePromise.then(me => {
-          res.send("Welcome!!!" + '</br>' + me.data.names[0].displayName + " " + JSON.stringify(me.data.emailAddresses[0].value))
-        }
-        );
+        res.send(err);
+      }
+      else if (userData) {
+        res.send("Welcome " + userData.displayName + "</br>You signed in with google email: " + userData.emailAddress);
+      }
+      else {
+        res.send("Unable to get logged in user info");
       }
     });
   }
@@ -87,3 +110,5 @@ app.get('/gauth', function (req, res) {
     res.redirect('/');
   }
 })
+
+
