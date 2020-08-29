@@ -1,0 +1,25 @@
+{
+  "name": "googleauthwithnodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrbharathi/GoogleAuthWithNodeJs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mrbharathi/GoogleAuthWithNodeJs/issues"
+  },
+  "homepage": "https://github.com/mrbharathi/GoogleAuthWithNodeJs#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "googleapis": "^59.0.0",
+    "mongoose": "^5.10.2",
+    "nodejs": "0.0.0"
+  }
+}
