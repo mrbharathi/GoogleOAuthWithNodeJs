@@ -1,6 +1,5 @@
 var google = require('googleapis')
 var express = require('express');
-var bodyparser = require('body-parser');
 
 var app = express();
 app.listen(9000, (result) => console.log("App running in http://localhost:9000"));
@@ -58,13 +57,9 @@ function GetUserDetailsFromGoogle(code, callback) {
   // Get an access token based on our OAuth code
   oAuth2Client.getToken(code, (err, tokens) => {
     if (err) {
-      console.log('Error authenticating');
-      console.log(err);
       callback(err, null);
     }
     else {
-      console.log('Successfully authenticated');
-
       oAuth2Client.setCredentials(tokens);
       var people = (new google.people_v1.People({ auth: oAuth2Client }).people);
       var mePromise = people.get({ resourceName: 'people/me', personFields: 'names,emailAddresses' });
@@ -76,7 +71,6 @@ function GetUserDetailsFromGoogle(code, callback) {
         }
 
         callback(null, userData);
-        //res.send("Welcome " + me.data.names[0].displayName + "</br>You signed in with " + me.data.emailAddresses[0].value);
       }
       );
     }
@@ -96,9 +90,13 @@ app.get('/gauth', function (req, res) {
   if (code) { //validate code with google, user may directly access this page with or without valid code directly
     GetUserDetailsFromGoogle(code, (err, userData) => {
       if (err) {
-        res.send(err);
+        console.log('Error authenticating');
+        console.log(err);
+        res.send(`Unable to get logged in user info. </br> <a href=${googleURL}>Login with google</a>`);
       }
       else if (userData) {
+        console.log('Successfully authenticated');
+
         res.send("Welcome " + userData.displayName + "</br>You signed in with google email: " + userData.emailAddress);
       }
       else {
